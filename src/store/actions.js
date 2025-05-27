@@ -91,6 +91,8 @@ export default{
         return {success:false, error: error.res?.data?.message||"failed to fetch theatre details"}
       }
     },
+
+
     //adding screens
     async addingscreens({rootGetters},theatreId){
       try {
@@ -127,7 +129,7 @@ export default{
 
     async fetchLanguages({ commit,rootGetters }) {
       try {
-        const res = await axios.get(`${rootGetters.getUrl}/api/theatredetails/getallang`);
+        const res = await axios.get(`${rootGetters.getUrl}/api/admindetails/getallang`);
         commit("setLanguages", res.data);
         return true;
       } catch (error) {
@@ -138,7 +140,7 @@ export default{
   
     async fetchGenres({ commit,rootGetters }) {
       try {
-        const res = await axios.get(`${rootGetters.getUrl}/api/theatredetails/getgenre`);
+        const res = await axios.get(`${rootGetters.getUrl}/api/admindetails/getgenre`);
         commit("setGenres", res.data);
       } catch (error) {
         console.error("Error fetching genres:", error);
@@ -166,14 +168,5 @@ export default{
         console.error("Error fetching Theatres:", error);
       }
     },
-    
-    //admin forgot password
-    async forgotadminPass({rootGetters},payload){ //data from frontb in payload
-        const result = await axios.put(`${rootGetters.getUrl}/api/adminuserdetails/resetPassword`,payload)//response stroring 
-                                                                                                //,payload for it in body
-        if(result.status >= 200 || result.status <300){
-            console.log(result);
-            return true;
-        }
-    },
+     
 }

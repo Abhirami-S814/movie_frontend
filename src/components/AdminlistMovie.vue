@@ -46,9 +46,10 @@
             <v-select
               v-model="editedMovie.genre_id"
               :items="genres"
-              item-text="genre_name"
+              
               item-value="genre_id"
               label="Genre"
+              item-title="genre_name"
             />
             <v-select
               v-model="editedMovie.lang_id"
@@ -56,6 +57,7 @@
               item-text="lang_name"
               item-value="lang_id"
               label="Language"
+              item-title="lang_name"
             />
           </template>
         </v-card-text>
@@ -117,7 +119,7 @@ export default {
 
     async fetchLanguages() {
       try {
-        const response = await axios.get("http://localhost:8082/api/theatredetails/getallang");
+        const response = await axios.get("http://localhost:8082/api/admindetails/getallang");
         this.languages = response.data.map((lang) => ({
           lang_id: lang.langId,
           lang_name: lang.langName,
@@ -129,7 +131,7 @@ export default {
 
     async fetchGenres() {
       try {
-        const response = await axios.get("http://localhost:8082/api/theatredetails/getgenre");
+        const response = await axios.get("http://localhost:8082/api/admindetails/getgenre");
         this.genres = response.data.map((genre) => ({
           genre_id: genre.genreId,
           genre_name: genre.genreName,

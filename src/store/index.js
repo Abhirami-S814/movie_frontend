@@ -17,10 +17,6 @@ const store = createStore({
             // userdetails:JSON.parse(sessionStorage.getItem('userdetails'))|| [],
             userreg:JSON.parse(sessionStorage.getItem('userreg')) || [],
             forgotpass:JSON.parse(sessionStorage.getItem('forgotpass')) || [],
-
-            forgotadminpass:JSON.parse(sessionStorage.getItem('forgotadminpass')) || [],
-
-            
             movie:JSON.parse(sessionStorage.getItem('movie')) || [],
             theatrereg:JSON.parse(sessionStorage.getItem('theatrereg'))|| [],
             // theatrelogin: JSON.parse(sessionStorage.getItem('theatrelogin')) || [],

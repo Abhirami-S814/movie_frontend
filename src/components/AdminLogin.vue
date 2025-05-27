@@ -7,7 +7,7 @@
         <input type="email" v-model="email" class="input" placeholder="Email">
         <input type="password" v-model="password" class="input" placeholder="Password">
         <p class="page-link">
-          <span class="page-link-label" @click="toggleForgotPassword">Forgot Password?</span>
+          <span class="page-link-label">Forgot Password?</span>
         </p>
         <button class="form-btn">Log in</button>
       </form>
@@ -28,8 +28,8 @@ export default {
     };
   },
   methods: {
-    toggleForgotPassword() {
-      this.showForgotPassword = !this.showForgotPassword;
+    forgotPassword() {
+      alert('Redirect to password recovery');
     },
     async adminlogin() {
       const payload = {
@@ -47,27 +47,8 @@ export default {
         console.error(error);
       }
     },
-    async forgotadminpass(){
-      const payload = { 'email': this.email, 'password': this.password };
-      try {
-        const res = await this.$store.dispatch('forgotPass', payload);
-        if (res) {
-          alert("Password Changed Successfully!!!");
-          this.showForgotPassword = false; // Hide reset form
-          this.email = "";
-          this.password = "";
-          this.$router.push('/login');
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    },
     onSubmit() {
       this.adminlogin();
-    },
-    onResetPassword() {
-      // alert(`Password reset link sent to ${this.resetEmail}`);
-      this.forgotadminpass();
     },
   }
 };

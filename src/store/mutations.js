@@ -18,10 +18,6 @@ export default{
         state.forgotpass=payload;
         sessionStorage.setItem('forgotpass',JSON.stringify(payload))
     },
-     setForgotadminpass(state,payload){
-        state.forgotadminpass=payload;
-        sessionStorage.setItem('forgotadminpass',JSON.stringify(payload))
-    },
     setMovie(state,payload){
         state.movie=payload;
         sessionStorage.setItem('movie',JSON.stringify(payload));
