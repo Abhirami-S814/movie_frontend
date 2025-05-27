@@ -5,6 +5,7 @@ export default {
 
     getUserreg : (state) =>state.userreg,
     getForgotpass : (state) =>state.forgotpass,
+    getForgotadminpass : (state) =>state.forgotadminpass,
     getMovie : (state) =>state.movie,
     getTheatrereg : (state) =>state.theatrereg,
     getTheatreLogin: (state) => state.theatrelogin,

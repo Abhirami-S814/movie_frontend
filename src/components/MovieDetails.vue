@@ -36,7 +36,7 @@ export default {
   methods: {
     async fetchMovieDetails() {
       try {
-        const response = await axios.get(`http://172.20.4.88:8080/api/userdetails/searchmovie`, {
+        const response = await axios.get(`http://localhost:8082/api/userdetails/searchmovie`, {
           params: { movieName: this.movieName },  
         });
 

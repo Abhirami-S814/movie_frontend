@@ -91,7 +91,7 @@ export default {
         const theatreId = this.$store.getters.gettheatreId;
         const res = await this.$store.dispatch("fetchTheatredetails", theatreId);
         if (res.success) {
-          this.theatre = res.data[0];
+          this.theatre = res.data;
         } else {
           alert("Error fetching theatre details");
         }

@@ -165,5 +165,15 @@ export default{
       } catch (error) {
         console.error("Error fetching Theatres:", error);
       }
-    }, 
+    },
+    
+    //admin forgot password
+    async forgotadminPass({rootGetters},payload){ //data from frontb in payload
+        const result = await axios.put(`${rootGetters.getUrl}/api/adminuserdetails/resetPassword`,payload)//response stroring 
+                                                                                                //,payload for it in body
+        if(result.status >= 200 || result.status <300){
+            console.log(result);
+            return true;
+        }
+    },
 }

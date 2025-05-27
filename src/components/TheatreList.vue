@@ -39,7 +39,7 @@
       async fetchTheatres() {
         try {
           const response = await axios.get(
-            "http://172.20.4.65:8080/api/theatredetails/allTheatres"
+            "http://localhost:8082/api/theatredetails/allTheatres"
           );
           this.theatres = response.data;
         } catch (error) {

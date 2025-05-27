@@ -8,6 +8,7 @@ import MovieList from './components/MovieList.vue';
 import MovieAdd from './components/MovieAdd.vue';
 import MovieDetails from './components/MovieDetails.vue';
 import TheatreList from './components/TheatreList.vue';
+import AdminlistMovie from './components/AdminlistMovie.vue';
 import TheatreOne from './components/TheatreOne.vue';
 
 
@@ -24,8 +25,8 @@ const routes = [
   { path: '/movie/:movieName', name:"moviedetails" , component:MovieDetails , props: true},
   { path: '/theatrelist', component: TheatreList},
   { path: '/theatrelog',name: "Login", component: TheatreLogin},
-  { path: '/dashboard', name: 'TheatreDashboard',component: TheatreOne},
-  
+  { path: '/dashboard', name: 'TheatreDashboard',component: TheatreOne },
+  { path: '/adminlistmov', component: AdminlistMovie},
 ];
 
 

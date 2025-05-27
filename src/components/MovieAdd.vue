@@ -136,13 +136,13 @@ export default {
         console.log(pair[0], pair[1]);
       }
 
-      const res = await axios.post('http://172.20.4.88:8080/api/admindetails/addMovie', formData, {
+      const res = await axios.post('http://localhost:8082/api/admindetails/addMovie', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       if (res.status === 200) {
-        // alert('Movie added successfully!');
-        this.$router.push('/movielist')
+        alert('Movie added successfully!');
+        this.$router.push('/adminlistmov')
         this.resetForm();
         this.showAddMovieDialog = false;
         this.$emit('movie-added');

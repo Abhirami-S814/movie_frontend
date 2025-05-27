@@ -6,7 +6,7 @@ import rootMutations from './mutations.js';
 const store = createStore({
     state(){
         return{
-            base_url: 'http://172.20.4.65:8080',
+            base_url: 'http://localhost:8082',
 
             //session storage
             
@@ -17,6 +17,10 @@ const store = createStore({
             // userdetails:JSON.parse(sessionStorage.getItem('userdetails'))|| [],
             userreg:JSON.parse(sessionStorage.getItem('userreg')) || [],
             forgotpass:JSON.parse(sessionStorage.getItem('forgotpass')) || [],
+
+            forgotadminpass:JSON.parse(sessionStorage.getItem('forgotadminpass')) || [],
+
+            
             movie:JSON.parse(sessionStorage.getItem('movie')) || [],
             theatrereg:JSON.parse(sessionStorage.getItem('theatrereg'))|| [],
             // theatrelogin: JSON.parse(sessionStorage.getItem('theatrelogin')) || [],

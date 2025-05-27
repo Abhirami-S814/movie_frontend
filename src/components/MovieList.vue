@@ -147,7 +147,7 @@ export default {
 
     async fetchMovies() {
       try {
-        const response = await axios.get("http://172.20.4.65:8080/api/userdetails/getallmovies");
+        const response = await axios.get("http://localhost:8082/api/userdetails/getallmovies");
 
         this.movies = response.data.map(movie => ({
           ...movie,
@@ -165,7 +165,7 @@ export default {
 
     async fetchLanguages() {
       try {
-        const response = await axios.get("http://172.20.4.65:8080/api/theatredetails/getallang");
+        const response = await axios.get("http://localhost:8082/api/theatredetails/getallang");
         this.languages = response.data.map(lang => ({
           lang_id: lang.langId,
           lang_name: lang.langName
@@ -177,7 +177,7 @@ export default {
 
     async fetchGenres() {
       try {
-        const response = await axios.get("http://172.20.4.65:8080/api/theatredetails/getgenre");
+        const response = await axios.get("http://localhost:8082/api/theatredetails/getgenre");
         this.genres = response.data.map(genre => ({
           genre_id: genre.genreId,
           genre_name: genre.genreName
