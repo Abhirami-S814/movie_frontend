@@ -5,13 +5,8 @@
       <div class="navbar">
         <div class="logo">QuickTix</div>
         <div class="navcenter">
-          <v-text-field
-            class="search"
-            append-inner-icon="mdi mdi-magnify"
-            variant="underlined"
-            label="Search Movies..."
-            v-model="searchQuery"
-          ></v-text-field>
+          <v-text-field class="search" append-inner-icon="mdi mdi-magnify" variant="underlined" label="Search Movies..."
+            v-model="searchQuery"></v-text-field>
           <div class="menu-icon" @click="toggleMenu">
             <span class="mdi mdi-menu"></span>
           </div>
@@ -36,12 +31,8 @@
           <div class="filter-section">
             <h4>Languages</h4>
             <div v-for="language in languages" :key="language.lang_id">
-              <input
-                type="checkbox"
-                :id="'lang_' + language.lang_id"
-                v-model="selectedLanguages"
-                :value="language.lang_id"
-              />
+              <input type="checkbox" :id="'lang_' + language.lang_id" v-model="selectedLanguages"
+                :value="language.lang_id" />
               <label :for="'lang_' + language.lang_id">&nbsp;{{ language.lang_name }}</label>
             </div>
           </div>
@@ -50,12 +41,7 @@
           <div class="filter-section">
             <h4>Genres</h4>
             <div v-for="genre in genres" :key="genre.genre_id">
-              <input
-                type="checkbox"
-                :id="'genre_' + genre.genre_id"
-                v-model="selectedGenres"
-                :value="genre.genre_id"
-              />
+              <input type="checkbox" :id="'genre_' + genre.genre_id" v-model="selectedGenres" :value="genre.genre_id" />
               <label :for="'genre_' + genre.genre_id">&nbsp;{{ genre.genre_name }}</label>
             </div>
           </div>
@@ -79,34 +65,6 @@
           </v-container>
         </section>
       </div>
-
-      <!-- Movie Dialog -->
-      <v-dialog v-model="isDialogOpen" max-width="600px">
-  <v-card>
-    <!-- Close Icon at the top-right -->
-    <v-btn icon @click="isDialogOpen = false" class="close-btn">
-      <v-icon>mdi-close</v-icon>
-    </v-btn>
-
-    <v-img v-if="selectedMovie.image" :src="selectedMovie.image" height="300px" cover></v-img>
-
-    <v-card-title>{{ selectedMovie.title }}</v-card-title>
-
-    <v-card-text class="movie-details">
-      <div><strong>🎭 Genre:</strong> {{ getGenreName(selectedMovie.genre_id) }}</div>
-      <div><strong>🌍 Language:</strong> {{ getLanguageName(selectedMovie.lang_id) }}</div>
-      <div><strong>⏳ Duration:</strong> {{ selectedMovie.duration || 'N/A' }} mins</div>
-      <div><strong>📅 Release Date:</strong> {{ selectedMovie.releaseDate || 'N/A' }}</div>
-      <p><strong>📝 Description:</strong> {{ selectedMovie.description || 'No description available' }}</p>
-    </v-card-text>
-
-    <!-- Book Tickets Button -->
-    <div class="bookticket">
-      <v-btn class="book-btn">Book Tickets</v-btn>
-    </div>
-  </v-card>
-</v-dialog>
-
     </div>
   </div>
 </template>
@@ -199,7 +157,7 @@ export default {
 
     showMovieDialog(movie) {
       this.selectedMovie = movie;
-      this.isDialogOpen = true;
+      this.$router.push('/moviedash')
     }
   },
 
@@ -308,13 +266,16 @@ li a:hover {
   /* margin-top: 15px; */
   background: #d32f2f;
   color: white;
-  font-size: 12px;  /* Even smaller font */
-  padding: 4px 8px; /* Smaller padding */
+  font-size: 12px;
+  /* Even smaller font */
+  padding: 4px 8px;
+  /* Smaller padding */
   border-radius: 4px;
-  min-width: 100px;  /* Prevents shrinking too much */
+  min-width: 100px;
+  /* Prevents shrinking too much */
   cursor: pointer;
   border: none;
-  
+
 }
 
 .book-btn:hover {

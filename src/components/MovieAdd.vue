@@ -1,102 +1,114 @@
 <template>
-<div class="bgimg">
-  <div>
-    <v-container class="fill-height">
-      <v-row class="justify-start">
-        <v-col cols="12" sm="8" md="6">
-          <v-card class="pa-5 text-center transparent-card" flat>
-            <v-card-title class="text-h4 font-weight-bold">🎉 Welcome Back, Admin!</v-card-title>
-            <v-btn color="primary" class="mt-4 w-100 w-sm-auto" @click="showAddMovieDialog = true">Add New Movie</v-btn>
-            <v-btn color="secondary" class="mt-4 w-100 w-sm-auto" @click="openManageDialog('language')">Manage Language</v-btn>
-            <v-btn color="secondary" class="mt-2 w-100 w-sm-auto" @click="openManageDialog('genre')">Manage Genre</v-btn>
+  <div class="bgimg">
+    <div>
+      <v-container class="fill-height">
+        <v-row class="justify-start">
+          <v-col cols="12" sm="8" md="6">
+            <v-card class="pa-5 text-center transparent-card" flat>
+              <v-card-title class="text-h4 font-weight-bold">🎉 Welcome Back, Admin!</v-card-title>
+              <v-btn color="primary" class="mt-4 w-100 w-sm-auto" @click="showAddMovieDialog = true">Add New
+                Movie</v-btn>
+              <v-btn color="secondary" class="mt-4 w-100 w-sm-auto" @click="openManageDialog('language')">Manage
+                Language</v-btn>
+              <v-btn color="secondary" class="mt-2 w-100 w-sm-auto" @click="openManageDialog('genre')">Manage
+                Genre</v-btn>
+            </v-card>
+          </v-col>
+        </v-row>
+
+        <!-- Add Movie Dialog -->
+        <v-dialog v-model="showAddMovieDialog" :fullscreen="$vuetify.display.xs" max-width="600px" persistent>
+          <v-card class="pa-5">
+            <v-card-title class="d-flex justify-space-between align-center">
+              <span class="text-h5">Add New Movie</span>
+              <v-icon class="deletebtn" @click="showAddMovieDialog = false">mdi-close-thick</v-icon>
+            </v-card-title>
+
+            <v-card-text>
+              <v-form ref="movieForm" @submit.prevent="submitAddMovie">
+                <v-row dense>
+                  <v-col cols="12" sm="6">
+                    <v-text-field label="🎬 Movie Name" v-model="moviename" :rules="[rules.required]"
+                      variant="outlined" />
+                  </v-col>
+                  <v-col cols="12" sm="6">
+                    <v-text-field label="⏳ Duration (hh:mm:ss)" v-model="duration" placeholder="hh:mm:ss"
+                      :rules="[rules.required, rules.timeFormat]" variant="outlined" />
+                  </v-col>
+                  <v-col cols="12">
+                    <v-textarea label="📝 Description" v-model="description" :rules="[rules.required]"
+                      variant="outlined" />
+                  </v-col>
+                  <v-col cols="12" sm="6">
+                    <v-select label="🌍 Language" :items="languages" item-title="langName" item-value="langId"
+                      v-model="selectedLang" :rules="[rules.required]" return-object variant="outlined" />
+                  </v-col>
+                  <v-col cols="12" sm="6">
+                    <v-select label="🎭 Genre" :items="genres" item-title="genreName" item-value="genreId"
+                      v-model="selectedGenre" :rules="[rules.required]" return-object variant="outlined" />
+                  </v-col>
+                  <v-col cols="12" sm="6">
+                    <v-text-field label="📅 Release Date" v-model="releasedate" type="date" :rules="[rules.required]"
+                      variant="outlined" />
+                  </v-col>
+                  <v-col cols="12" sm="6">
+                    <v-file-input label="🎬 Movie Poster" v-model="movieposter" accept="image/*" @change="onFileChange"
+                      :rules="[rules.required]" variant="outlined" />
+                  </v-col>
+                </v-row>
+                <div class="text-center mt-4">
+                  <v-btn color="primary" type="submit" class="addbtn">🎥 Add Movie</v-btn>
+                </div>
+              </v-form>
+            </v-card-text>
           </v-card>
-        </v-col>
-      </v-row>
+        </v-dialog>
 
-      <!-- Add Movie Dialog -->
-      <v-dialog v-model="showAddMovieDialog" :fullscreen="$vuetify.display.xs" max-width="600px" persistent>
-        <v-card class="pa-5">
-          <v-card-title class="d-flex justify-space-between align-center">
-            <span class="text-h5">Add New Movie</span>
-            <v-icon class="deletebtn" @click="showAddMovieDialog = false">mdi-close-thick</v-icon>
-          </v-card-title>
+        <!-- Manage Dialog -->
+        <v-dialog v-model="showManageDialogBox" :fullscreen="$vuetify.display.xs" max-width="700px" persistent>
+          <v-card>
+            <v-card-title class="d-flex justify-space-between align-center">
+              Manage {{ manageType === "language" ? "Languages" : "Genres" }}
+              <v-icon class="deletebtn" @click="showManageDialogBox = false">mdi-close-thick</v-icon>
+            </v-card-title>
 
-          <v-card-text>
-            <v-form ref="movieForm" @submit.prevent="submitAddMovie" v-slot="{ valid }">
-              <v-row dense>
-                <v-col cols="12" sm="6">
-                  <v-text-field label="🎬 Movie Name" v-model="moviename" :rules="[rules.required]" variant="outlined" />
+            <v-card-text>
+              <v-row align="center" class="mb-4">
+                <v-col cols="8">
+                  <v-text-field v-model="newItemName" label="Enter name" variant="outlined" dense
+                    @keyup.enter="handleAdd" />
                 </v-col>
-                <v-col cols="12" sm="6">
-                  <v-text-field label="⏳ Duration (hh:mm:ss)" v-model="duration" placeholder="hh:mm:ss" :rules="[rules.required, rules.timeFormat]" variant="outlined" />
-                </v-col>
-                <v-col cols="12">
-                  <v-textarea label="📝 Description" v-model="description" :rules="[rules.required]" variant="outlined" />
-                </v-col>
-                <v-col cols="12" sm="6">
-                  <v-select label="🌍 Language" :items="languages" item-title="langName" item-value="langId" v-model="selectedLang" :rules="[rules.required]" return-object variant="outlined" />
-                </v-col>
-                <v-col cols="12" sm="6">
-                  <v-select label="🎭 Genre" :items="genres" item-title="genreName" item-value="genreId" v-model="selectedGenre" :rules="[rules.required]" return-object variant="outlined" />
-                </v-col>
-                <v-col cols="12" sm="6">
-                  <v-text-field label="📅 Release Date" v-model="releasedate" type="date" :rules="[rules.required]" variant="outlined" />
-                </v-col>
-                <v-col cols="12" sm="6">
-                  <v-file-input label="🎬 Movie Poster" v-model="movieposter" accept="image/*" @change="onFileChange" :rules="[rules.required]" variant="outlined" />
+                <v-col cols="4">
+                  <v-btn color="success" class="w-100 mt-1" @click="handleAdd">Add</v-btn>
                 </v-col>
               </v-row>
-              <div class="text-center mt-4">
-                <v-btn :disabled="!valid" color="primary" type="submit" class="addbtn">🎥 Add Movie</v-btn>
-              </div>
-            </v-form>
-          </v-card-text>
-        </v-card>
-      </v-dialog>
 
-      <!-- Manage Dialog -->
-      <v-dialog v-model="showManageDialogBox" :fullscreen="$vuetify.display.xs" max-width="700px" persistent>
-        <v-card>
-          <v-card-title class="d-flex justify-space-between align-center">
-            Manage {{ manageType === "language" ? "Languages" : "Genres" }}
-            <v-icon class="deletebtn" @click="showManageDialogBox = false">mdi-close-thick</v-icon>
-          </v-card-title>
-
-          <v-card-text>
-            <v-row align="center" class="mb-4">
-              <v-col cols="8">
-                <v-text-field v-model="newItemName" label="Enter name" variant="outlined" dense @keyup.enter="handleAdd" />
-              </v-col>
-              <v-col cols="4">
-                <v-btn color="success" class="w-100 mt-1" @click="handleAdd">Add</v-btn>
-              </v-col>
-            </v-row>
-
-            <v-table dense class="w-100">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th class="text-center" style="width: 140px;">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="item in itemsList" :key="itemId(item)">
-                  <td>
-                    <v-text-field v-model="item.editName" hide-details dense variant="outlined" style="max-width: 300px;" />
-                  </td>
-                  <td class="text-center d-flex flex-column flex-sm-row justify-center">
-                    <v-btn class="action-btn update-btn" @click="handleUpdate(item)">Update</v-btn>
-                    <v-btn class="action-btn delete-btn" @click="handleDelete(item)">Delete</v-btn>
-                  </td>
-                </tr>
-              </tbody>
-            </v-table>
-          </v-card-text>
-        </v-card>
-      </v-dialog>
-    </v-container>
+              <v-table dense class="w-100">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th class="text-center" style="width: 140px;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="item in itemsList" :key="itemId(item)">
+                    <td>
+                      <v-text-field v-model="item.editName" hide-details dense variant="outlined"
+                        style="max-width: 300px;" />
+                    </td>
+                    <td class="text-center d-flex flex-column flex-sm-row justify-center">
+                      <v-btn class="action-btn update-btn" @click="handleUpdate(item)">Update</v-btn>
+                      <v-btn class="action-btn delete-btn" @click="handleDelete(item)">Delete</v-btn>
+                    </td>
+                  </tr>
+                </tbody>
+              </v-table>
+            </v-card-text>
+          </v-card>
+        </v-dialog>
+      </v-container>
+    </div>
   </div>
-</div>
 </template>
 
 <script>
@@ -233,22 +245,27 @@ export default {
       }
     },
     async submitAddMovie() {
-      if (!this.moviename || !this.duration || !this.description || !this.releasedate || !this.selectedLang || !this.selectedGenre || !this.movieposter) {
-        alert("Please fill all the fields.");
+      const isValid = await this.$refs.movieForm.validate();
+      if (!isValid) {
+        alert("Please fix the form errors.");
         return;
       }
 
       try {
+        const movieData = {
+          movieName: this.moviename,
+          duration: this.duration,
+          description: this.description,
+          releaseDate: this.releasedate,
+          language: this.selectedLang.langId,  // ✅ Just the ID
+          genre: this.selectedGenre.genreId,
+        };
+
         const formData = new FormData();
-        formData.append("moviename", this.moviename);
-        formData.append("duration", this.duration);
-        formData.append("description", this.description);
-        formData.append("releasedate", this.releasedate);
-        formData.append("language", this.selectedLang.langName);
-        formData.append("genre", this.selectedGenre.genreName);
+        formData.append("movieModel", new Blob([JSON.stringify(movieData)], { type: "application/json" }));
         formData.append("movieposter", this.movieposter);
 
-        await axios.post("http://localhost:8082/api/admindetails/addmovie", formData, {
+        await axios.post("http://localhost:8082/api/admindetails/addMovie", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
 
@@ -264,10 +281,11 @@ export default {
         this.selectedGenre = null;
         this.movieposter = null;
       } catch (error) {
-        console.error("Add movie error:", error);
+        console.error("Add movie error:", error.response || error);
         alert("Failed to add movie.");
       }
-    },
+    }
+
   },
   mounted() {
     this.fetchLanguages();
@@ -298,6 +316,7 @@ export default {
   background-color: #1976d2;
   color: white;
 }
+
 .update-btn:hover {
   background-color: #115293;
 }
@@ -306,6 +325,7 @@ export default {
   background-color: #d32f2f;
   color: white;
 }
+
 .delete-btn:hover {
   background-color: #9a2323;
 }
@@ -325,6 +345,7 @@ export default {
   display: flex;
   flex-direction: column;
 }
+
 .transparent-card {
   background-color: transparent !important;
   box-shadow: none !important;
@@ -335,10 +356,12 @@ export default {
   .addbtn {
     width: 100% !important;
   }
+
   .action-btn {
     width: 100%;
     margin: 4px 0;
   }
+
   .v-card-title {
     flex-direction: column;
     align-items: flex-start;

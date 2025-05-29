@@ -11,6 +11,7 @@ import TheatreList from './components/TheatreList.vue';
 import AdminlistMovie from './components/AdminlistMovie.vue';
 import TheatreOne from './components/TheatreOne.vue';
 import TheatreShowdates from './components/TheatreShowdates.vue';
+import MovieOne from './components/MovieOne.vue';
 
 
 
@@ -29,6 +30,7 @@ const routes = [
   { path: '/dashboard', name: 'TheatreDashboard',component: TheatreOne },
   { path: '/adminlistmov', component: AdminlistMovie},
   { path: '/theatreshowdates', component: TheatreShowdates},
+  { path: '/moviedash', component: MovieOne},
 
 ];
 

@@ -74,7 +74,6 @@ export default {
         const res = await this.$store.dispatch('theatreReg', payload);
         if (res) {
           alert("Successfully registered!");
-          // this.$router.push('/login');
         }
       } catch (error) {
         console.error(error);
