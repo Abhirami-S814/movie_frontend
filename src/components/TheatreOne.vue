@@ -23,10 +23,21 @@
         </v-list-item>
 
         <v-list-item link @click="selectedSection = 'manageShows'">
-          <v-list-item-icon><v-icon>mdi-movie-open</v-icon></v-list-item-icon>
+          <v-list-item-icon><v-icon>mdi-calendar</v-icon></v-list-item-icon>
           <v-list-item-title>Manage Shows</v-list-item-title>
         </v-list-item>
+
+        <v-list-item link @click="selectedSection = 'ticketCategory'">
+          <v-list-item-icon><v-icon>mdi-ticket</v-icon></v-list-item-icon>
+          <v-list-item-title>Ticket Category</v-list-item-title>
+        </v-list-item>
+
+        <!-- <v-list-item link @click="selectedSection = 'ticketCategory'">
+          <v-list-item-icon><v-icon>mdi-ticket</v-icon></v-list-item-icon>
+          <v-list-item-title>Movies</v-list-item-title>
+        </v-list-item> -->
       </v-list>
+
     </v-navigation-drawer>
 
     <!-- Main Content -->
@@ -88,9 +99,6 @@
                       dense outlined :disabled="screen.movieName && updatingMovieScreenId !== screen.screenId" />
                   </v-card-text>
 
-
-
-
                   <v-card-actions class="d-flex flex-wrap" style="gap: 8px; justify-content: space-between;">
                     <v-btn color="primary" @click="assignMovieToScreen(screen.screenId)">🎬 Assign Movie</v-btn>
                     <v-btn color="error" text @click="deleteAssignedMovie(screen.screenId)">❌ Delete Movie</v-btn>
@@ -137,7 +145,7 @@
           </v-snackbar>
 
           <v-expand-transition>
-            <div v-if="showTimeForm" class="mt-4">
+            <div  class="mt-4">
               <v-card class="pa-4" elevation="2">
                 <h4 class="mb-4">Add Show Times</h4>
 
@@ -146,16 +154,76 @@
                 <p><strong>🗓️ End Date:</strong> {{ showenddate }}</p>
 
                 <v-text-field label="Show Start Time" v-model="showStart" type="time" required></v-text-field>
+<v-btn color="primary" @click="submitShowTimes">Add Show Time</v-btn>
 
-                <v-text-field label="Show End Time" v-model="showEnd" type="time" required></v-text-field>
-
-                <v-btn color="primary" @click="submitShowTimes">Add Show Time</v-btn>
               </v-card>
             </div>
           </v-expand-transition>
 
 
         </div>
+
+        <!-- Ticket Category Section -->
+        <div v-if="selectedSection === 'ticketCategory'">
+          <v-card class="mb-6 pa-4" elevation="2" max-width="500" mx-auto>
+            <v-card-title>Add Ticket Category</v-card-title>
+            <v-card-text>
+              <v-text-field v-model="ticketCategoryName" label="Category Name" dense outlined />
+              <v-text-field v-model.number="ticketCategoryCharge" label="Category Charge" type="number" dense
+                outlined />
+              <v-btn color="primary" class="mt-3" @click="submitTicketCategory">Add Category</v-btn>
+            </v-card-text>
+          </v-card>
+
+          <!-- Display Existing Categories -->
+          <v-card class="pa-4" elevation="2" max-width="600" mx-auto>
+            <v-card-title class="text-h6">🎟️ Existing Ticket Categories</v-card-title>
+            <v-card-text>
+              <v-list dense>
+                <v-list-item v-for="(cat, index) in ticketCategories" :key="'cat-' + index">
+                  <v-list-item-content>
+                    <v-list-item-title>
+                      <strong>{{ cat.ticketcate }}</strong>
+                    </v-list-item-title>
+
+                    <v-list-item-subtitle v-if="editingCategoryId !== cat.ticketcatechargeId">
+                      Charge: ₹{{ cat.ticketcharge }}
+                    </v-list-item-subtitle>
+
+                    <v-text-field v-else v-model.number="updatedCharge" type="number" label="Update Charge" dense
+                      outlined />
+
+                    <v-row class="mt-2" dense>
+                      <v-col cols="6" sm="4" md="3">
+                        <v-btn color="error" text @click="deleteTicketCategory(cat.ticketcatechargeId)">🗑️
+                          Delete</v-btn>
+                      </v-col>
+
+                      <v-col cols="6" sm="4" md="3" v-if="editingCategoryId !== cat.ticketcatechargeId">
+                        <v-btn color="primary" text
+                          @click="() => { editingCategoryId = cat.ticketcatechargeId; updatedCharge = cat.ticketcharge; }">
+                          Edit
+                        </v-btn>
+                      </v-col>
+
+                      <v-col cols="6" sm="4" md="3" v-else>
+                        <v-btn color="success" text @click="updateTicketCategory(cat.ticketcatechargeId)">
+                          Save</v-btn>
+                      </v-col>
+
+                      <v-col cols="6" sm="4" md="3" v-if="editingCategoryId === cat.ticketcatechargeId">
+                        <v-btn text @click="() => { editingCategoryId = null; updatedCharge = null; }">Cancel</v-btn>
+                      </v-col>
+                    </v-row>
+                  </v-list-item-content>
+                </v-list-item>
+
+              </v-list>
+            </v-card-text>
+          </v-card>
+        </div>
+
+
       </v-container>
     </v-main>
   </v-app>
@@ -193,11 +261,25 @@ export default {
         show: false,
         message: '',
         color: 'info'
-      }
+      },
+      ticketCategoryName: '',
+      ticketCategoryCharge: null,
+      ticketCategories: [],
+      editingCategoryId: null,
+      updatedCharge: null,
+      theatreScreens: [],
+      
     };
   },
   computed: {
     ...mapGetters(['gettheatreId'])
+  },
+  watch: {
+    selectedSection(newVal) {
+      if (newVal === 'ticketCategory') {
+        this.fetchTicketCategories();
+      }
+    }
   },
   // mounted(){
   //   this.fetchMovies();
@@ -369,38 +451,37 @@ export default {
       this.snackbar.show = true;
     },
     async submitShowTimes() {
-      if (!this.selectedScreenId || !this.showStart || !this.showEnd || !this.dateId) {
-        alert('Please select all required fields including Date.');
-        return;
-      }
+  if (!this.selectedScreenId || !this.showStart || !this.dateId || !this.selectedMovieId) {
+    this.snackbar = { show: true, message: 'Please fill all required fields.', color: 'error' };
+    return;
+  }
 
+  const theatreId = Number(this.theatre?.id || this.gettheatreId);
 
+  const showTimeModel = {
+    dateId: this.dateId,
+    showStart: this.showStart + ':00', // Ensure 'HH:mm:ss' format
+    theatreId: theatreId,
+    movieId: this.selectedMovieId
+  };
 
-      // Find theatreId from your store or theatre data
-      const theatreId = Number(this.theatre.id || this.gettheatreId);
+  try {
+    const res = await axios.post('http://localhost:8082/api/theatredetails/addshowTime', showTimeModel);
 
-      // Prepare showTimeModel JSON matching backend
-      const showTimeModel = {
-        dateId: this.dateId,                    // selected date ID (integer)
-        showStart: this.showStart + ':00', // add seconds for LocalTime format
-        showEnd: this.showEnd + ':00',
-        theatreId: theatreId
-      };
-
-      try {
-        const res = await axios.post('http://localhost:8082/api/theatredetails/addshowTime', showTimeModel);
-        if (res.status === 201) {
-          this.snackbar = { show: true, message: 'Show time added successfully!', color: 'success' };
-          this.showStart = '';
-          this.showEnd = '';
-          // refresh show times list if you have one
-        } else {
-          this.snackbar = { show: true, message: 'Failed to add show time.', color: 'error' };
-        }
-      } catch (err) {
-        this.snackbar = { show: true, message: 'Error: ' + err.message, color: 'error' };
-      }
-    },
+    if (res.status === 200) {
+      this.snackbar = { show: true, message: 'Show time added successfully!', color: 'success' };
+      this.showStart = '';
+    } else {
+      this.snackbar = { show: true, message: 'Failed to add show time.', color: 'error' };
+    }
+  } catch (err) {
+    if (err.response && err.response.status === 404) {
+      this.snackbar = { show: true, message: `${err.response.data}`, color: 'warning' };
+    } else {
+      this.snackbar = { show: true, message: `Error: ${err.message}`, color: 'error' };
+    }
+  }
+},
     async updateAssignedMovie(screenId) {
       const selectedMovieId = this.selectedMovies[screenId];
       if (!selectedMovieId) {
@@ -448,7 +529,99 @@ export default {
     },
     enableMovieUpdate(screenId) {
       this.updatingMovieScreenId = screenId;
+    },
+    async submitTicketCategory() {
+      if (!this.ticketCategoryName || !this.ticketCategoryCharge) {
+        alert('Please enter both category name and charge.');
+        return;
+      }
+
+      const payload = {
+        ticketcate: this.ticketCategoryName,
+        ticketcharge: this.ticketCategoryCharge
+      };
+
+      try {
+        const res = await axios.post('http://localhost:8082/api/theatredetails/addcate', payload, {
+          params: { theatreId: this.gettheatreId }
+        });
+
+        if (res.status === 200 || res.status === 201) {
+          alert('Ticket category added successfully!');
+          this.ticketCategoryName = '';
+          this.ticketCategoryCharge = null;
+        } else {
+          alert('Failed to add ticket category.');
+        }
+      } catch (error) {
+        alert('Error adding category: ' + error.message);
+      }
+    },
+    async fetchTicketCategories() {
+      try {
+        const res = await axios.get('http://localhost:8082/api/theatredetails/gettheatrecate', {
+          params: { theatreId: this.gettheatreId }
+        });
+        this.ticketCategories = res.data;
+      } catch (error) {
+        alert('Error fetching ticket categories: ' + error.message);
+      }
+    },
+    async deleteTicketCategory(categoryId) {
+      const confirmed = confirm('Are you sure you want to delete this category?');
+      if (!confirmed) return;
+
+      try {
+        const res = await axios.delete('http://localhost:8082/api/theatredetails/deletecate', {
+          params: { ticketcatechargeId: categoryId }
+        });
+
+        if (res.status === 200) {
+          alert('Category deleted successfully!');
+          await this.fetchTicketCategories();
+        } else {
+          alert('Failed to delete category.');
+        }
+      } catch (err) {
+        alert('Error deleting category: ' + err.message);
+      }
+    },
+
+    async updateTicketCategory(categoryId) {
+      if (!this.updatedCharge || isNaN(this.updatedCharge)) {
+        alert('Please enter a valid charge.');
+        return;
+      }
+
+      try {
+        const res = await axios.put('http://localhost:8082/api/theatredetails/updatecate', null, {
+          params: { ticketcatechargeId: categoryId, ticketcharge: this.updatedCharge }
+        });
+
+        if (res.status === 200) {
+          alert('Category updated successfully!');
+          this.editingCategoryId = null;
+          this.updatedCharge = null;
+          await this.fetchTicketCategories();
+        } else {
+          alert('Failed to update category.');
+        }
+      } catch (err) {
+        alert('Error updating category: ' + err.message);
+      }
+    },
+    async fetchTheatreScreens() {
+    try {
+      const res = await axios.get(`http://localhost:8082/api/theatredetails/screensbByTheatre/${this.theatre.id}`);
+      this.theatreScreens = res.data;
+    } catch (error) {
+      alert('Failed to fetch theatre screens: ' + error.message);
     }
+  }
+
+
+
+
 
 
 

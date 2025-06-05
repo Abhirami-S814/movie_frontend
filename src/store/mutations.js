@@ -3,10 +3,10 @@ export default{
       state.theatreId=payload;
       sessionStorage.setItem("theatreId",payload);
     },
-    setUserlogin(state,payload){
-        state.userlogin=payload;
-        sessionStorage.setItem('userlogin',JSON.stringify(payload))
-    },
+    setUserlogin(state, payload) {
+  state.userlogin = payload;
+  sessionStorage.setItem('userlogin', JSON.stringify(payload));
+},
 
 
 

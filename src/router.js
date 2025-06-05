@@ -12,7 +12,7 @@ import AdminlistMovie from './components/AdminlistMovie.vue';
 import TheatreOne from './components/TheatreOne.vue';
 import TheatreShowdates from './components/TheatreShowdates.vue';
 import MovieOne from './components/MovieOne.vue';
-
+import BookTicket from './components/BookTicket.vue';
 
 
 
@@ -30,8 +30,12 @@ const routes = [
   { path: '/dashboard', name: 'TheatreDashboard',component: TheatreOne },
   { path: '/adminlistmov', component: AdminlistMovie},
   { path: '/theatreshowdates', component: TheatreShowdates},
-  { path: '/moviedash', component: MovieOne},
-
+{ path: '/moviedash/:movieId', component: MovieOne, name: 'MovieDash' },
+{
+  path: '/book-ticket/:movieId/:theatreId/:screenId/:userId',
+  name: 'BookTicket',
+  component: BookTicket
+}
 ];
 
 

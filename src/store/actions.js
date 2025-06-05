@@ -1,14 +1,23 @@
 import axios from "axios"
 export default{
     //user login
-    async userlogin({rootGetters},payload){ //data from frontend in payload rootgetters contain getter from vuex here getUrl
-        const res = await axios.post(`${rootGetters.getUrl}/api/userdetails/userlogin`,payload)//response stroring 
-                                                                                                //,payload for it in body
-        if(res.status >= 200 || res.status <300){
-            console.log(res);
-            return true;
-        }
-    },
+    async userlogin({rootGetters, commit}, payload) {
+  try {
+    const res = await axios.post(`${rootGetters.getUrl}/api/userdetails/userlogin`, payload);
+    if (res.status >= 200 && res.status < 300) {
+      // Assuming backend returns user object in res.data
+      const user = res.data; 
+      
+      // Commit mutation to save user info in state & sessionStorage
+      commit('setUserlogin', user);
+
+      return true;
+    }
+  } catch (error) {
+    console.error('Login failed:', error);
+    return false;
+  }
+},
     //user registration
     async userReg({rootGetters},payload){ //data from frontb in payload
         const res = await axios.post(`${rootGetters.getUrl}/api/userdetails/userreg`,payload)//response stroring 

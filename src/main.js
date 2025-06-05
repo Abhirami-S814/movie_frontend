@@ -6,6 +6,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import "bootstrap";
 import router from './router';
 import store from './store';
+import 'leaflet/dist/leaflet.css';
+
 
 
 loadFonts()

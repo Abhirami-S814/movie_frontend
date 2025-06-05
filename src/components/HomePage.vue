@@ -18,48 +18,80 @@
           <li><router-link to="">HOME</router-link></li>
           <li><router-link to="/login">MOVIES</router-link></li>
           <li><router-link to="/theatrelist">THEATRE</router-link></li>
-          <li><a href="#about">ABOUT</a></li> <!-- Scrolls to About Us Section -->
+          <li><a href="#about">ABOUT</a></li>
           <li><router-link to="/login">Login</router-link></li>
         </ul>
-        <span class="mdi mdi-account-circle-outline accicon "></span>
+        <span class="mdi mdi-account-circle-outline accicon"></span>
       </div>
     </div>
 
     <!-- Main Content -->
-    <div class="content-container row">
-      <div class="text-content col-12 col-md-4 d-flex flex-column justify-content-center align-items-center">
-        <h1>BOOK YOUR TICKETS NOW...!!</h1>
-        <p>Your ultimate movie destination</p>
-      </div>
-      <div class="background-image col-12 col-md-8"></div>
+    <!-- Main Content -->
+  <div class="content-container row">
+    <div class="text-content col-12 col-md-4 d-flex flex-column justify-content-center align-items-center">
+      <h1>BOOK YOUR TICKETS NOW...!!</h1>
+      <p>Your ultimate movie destination</p>
     </div>
+    <div class="background-image col-12 col-md-8"></div>
+  </div>
+
 
     <!-- About Us Section -->
     <div id="about" class="about-section">
       <div class="about-container">
-        <h2 class="about-title">About Us</h2>
-        <h6>Welcome to <strong>QuickTix</strong> – your ultimate destination for seamless and hassle-free movie ticket booking.</h6>
-        <h6>We provide a convenient, fast, and secure way for movie lovers to book tickets online, eliminating long queues and last-minute disappointments.</h6>
+        <h2 class="section-title">About Us</h2>
+        <div class="about-intro">
+          <h3>Welcome to <span class="highlight">QuickTix</span></h3>
+          <p class="intro-text">Your premier destination for hassle-free movie ticket booking. Experience cinema like never before!</p>
+        </div>
 
-        <div class="about-content">
-          <!-- Why Choose Us Section -->
-          <div class="about-sections">
-            <h3>Why Choose Us?</h3>
-            <p>🎬 Instant booking confirmation</p>
-            <p>🎟 Wide selection of movies & theaters</p>
-            <p>📞🔒 Secure payment options</p>
+        <div class="features-grid">
+          <div class="feature-card">
+            <span class="feature-icon">🎬</span>
+            <h4>Instant Booking</h4>
+            <p>Book your favorite movies in seconds with instant confirmation</p>
           </div>
+          <div class="feature-card">
+            <span class="feature-icon">🎟</span>
+            <h4>Wide Selection</h4>
+            <p>Choose from hundreds of movies and theaters near you</p>
+          </div>
+          <div class="feature-card">
+            <span class="feature-icon">🔒</span>
+            <h4>Secure Payments</h4>
+            <p>Multiple secure payment options for your convenience</p>
+          </div>
+          <div class="feature-card">
+            <span class="feature-icon">📱</span>
+            <h4>Mobile Tickets</h4>
+            <p>Skip the queue with digital tickets on your phone</p>
+          </div>
+        </div>
 
-          <!-- Contact Us Section -->
-          <div class="contact-section">
-            <h3>Contact Us</h3>
-            <p>📍 Address: 123 Movie Street, Cinema City, 45678</p>
-            <p>📧 Email: support@quicktix.com</p>
-            <p>📞 Phone: +123 456 7890</p>
+        <div class="contact-container">
+          <h3>Get in Touch</h3>
+          <div class="contact-info">
+            <div class="contact-item">
+              <span class="contact-icon">📍</span>
+              <p>123 Movie Street, Cinema City, 45678</p>
+            </div>
+            <div class="contact-item">
+              <span class="contact-icon">📧</span>
+              <p>support@quicktix.com</p>
+            </div>
+            <div class="contact-item">
+              <span class="contact-icon">📞</span>
+              <p>+123 456 7890</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Copyright Footer -->
+  <footer class="copyright">
+    <p>&copy; 2024 QuickTix. All rights reserved.</p>
+  </footer>
   </div>
 </template>
 
@@ -79,7 +111,7 @@ export default {
 </script>
 
 <style scoped>
-/* Navbar */
+/* Navbar Styles */
 .navbar {
   display: flex;
   align-items: center;
@@ -136,7 +168,6 @@ li a:hover {
   color: white;
 }
 
-/* Hide menu links initially on mobile */
 .nav-links {
   display: flex;
 }
@@ -163,7 +194,7 @@ li a:hover {
   }
 }
 
-/* Main Content */
+/* Main Content Styles */
 .content-container {
   display: flex;
   justify-content: space-between;
@@ -173,7 +204,6 @@ li a:hover {
 
 .text-content {
   flex: 0.9;
-  /* text-align: center; */
   color: #333;
   margin-left: 20px;
 }
@@ -191,73 +221,214 @@ li a:hover {
   height: 100%;
 }
 
-/* About Us Section - Full Width */
+/* About Section Styles */
 .about-section {
-  width: 100vw;
-  padding: 50px 20px;
-  background-color: #f5f5f5;
+  background-color: #f8f9fa;
+  padding: 80px 0;
+  position: relative;
+  min-height: 100vh;
+}
+
+.about-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  color: #2c3e50;
+  margin-bottom: 50px;
+  text-align: center;
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background-color: indigo;
+}
+
+.about-intro {
+  text-align: center;
+  margin-bottom: 60px;
+  animation: slideUp 0.8s ease-out;
+}
+
+.highlight {
+  color: indigo;
+  font-weight: bold;
+}
+
+.intro-text {
+  font-size: 1.2rem;
+  color: #666;
+  max-width: 800px;
+  margin: 20px auto;
+  line-height: 1.6;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+  margin-bottom: 60px;
+  animation: fadeIn 1s ease-in;
+}
+
+.feature-card {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   text-align: center;
 }
 
-/* Container for About Us */
-.about-container {
-  width: 100%;
-  max-width: 1200px;
-  margin: auto;
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
 
-/* About Us Content */
-.about-content {
-  display: flex;
-  justify-content: space-around;
-  align-items:normal;
-  line-height: normal;
-  width: 100%;
-  gap: 50px;
-  padding: 20px;
-}
-
-/* Individual Sections */
-.about-sections,
-.contact-section {
-  flex: 1;
-  text-align: left;
-  padding: 20px;
-}
-
-/* Ensure lists align properly */
-.about-sections ul {
-  padding-left: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.about-sections li {
-  list-style: none;
+.feature-icon {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
   display: block;
-  padding: 5px;
 }
 
-/* Responsive: Stack sections on small screens */
+.feature-card h4 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+  font-size: 1.3rem;
+}
+
+.feature-card p {
+  color: #666;
+  line-height: 1.6;
+}
+
+.contact-container {
+  background: white;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  animation: slideUp 0.8s ease-out;
+}
+
+.contact-container h3 {
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 1.8rem;
+}
+
+.contact-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  transition: transform 0.3s ease;
+}
+
+.contact-item:hover {
+  transform: translateX(5px);
+}
+
+.contact-icon {
+  font-size: 1.5rem;
+  color: indigo;
+}
+
+.contact-item p {
+  margin: 0;
+  color: #666;
+}
+
+/* Copyright Footer */
+.copyright {
+  background-color: indigo;
+  color: white;
+  text-align: center;
+  padding: 15px 0;
+  width: 100%;
+}
+
+.copyright p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Styles for About Section */
 @media (max-width: 768px) {
-  .text-content h1 {
-    font-size: 40px;
+  .section-title {
+    font-size: 2rem;
   }
 
-  .background-image {
-    background-size: cover;
+  .features-grid {
+    grid-template-columns: 1fr;
   }
 
-  .about-content {
-    flex-direction: column;
-    text-align: center;
-    gap: 20px;
+  .contact-info {
+    grid-template-columns: 1fr;
   }
 
-  .about-sections,
-  .contact-section {
-    width: 100%;
-    text-align: center;
+  .about-section {
+    padding: 40px 0;
+  }
+
+  .feature-card {
+    padding: 20px;
+  }
+}
+
+/* Dark mode support for About Section */
+@media (prefers-color-scheme: dark) {
+  .about-section {
+    background-color: #1a1a1a;
+  }
+
+  .feature-card,
+  .contact-container {
+    background: #2d2d2d;
+  }
+
+  .section-title,
+  .feature-card h4 {
+    color: #ffffff;
+  }
+
+  .intro-text,
+  .feature-card p,
+  .contact-item p {
+    color: #cccccc;
   }
 }
 </style>

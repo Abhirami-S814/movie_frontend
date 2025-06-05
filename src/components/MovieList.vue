@@ -63,6 +63,25 @@
               </v-col>
             </v-row>
           </v-container>
+
+          <v-dialog v-model="isDialogOpen" max-width="600px">
+            <v-card>
+              <v-card-title class="headline">{{ selectedMovie.title }}</v-card-title>
+              <v-card-text>
+                <v-img :src="selectedMovie.image" height="300px" class="mb-4"></v-img>
+                <div><strong>Genre:</strong> {{ getGenreName(selectedMovie.genre_id) }}</div>
+                <div><strong>Language:</strong> {{ getLanguageName(selectedMovie.lang_id) }}</div>
+                <div><strong>Duration:</strong> {{ selectedMovie.duration || 'N/A' }}</div>
+                <div><strong>Description:</strong> {{ selectedMovie.description || 'No description available.' }}</div>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="red darken-1" text @click="isDialogOpen = false">Close</v-btn>
+                <v-btn color="indigo" dark @click="goToBookingPage(selectedMovie.movieId)">Book Ticket</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+
         </section>
       </div>
     </div>
@@ -155,10 +174,24 @@ export default {
       return genre ? genre.genre_name : "Unknown";
     },
 
+    // showMovieDialog(movie) {
+    //   console.log('Selected movie:', movie);
+    //   console.log('Selected movie ID:', movie.movieId);
+    //   this.selectedMovie = movie;
+    //   this.$router.push({ name: 'MovieDash', params: { movieId: movie.movieId } });
+    // }
+
     showMovieDialog(movie) {
-      this.selectedMovie = movie;
-      this.$router.push('/moviedash')
-    }
+  this.selectedMovie = movie;
+  this.isDialogOpen = true;
+},
+goToBookingPage(movieId) {
+  this.$router.push({ name: 'MovieDash', params: { movieId } });
+}
+
+
+
+
   },
 
   mounted() {
