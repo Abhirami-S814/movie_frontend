@@ -9,34 +9,74 @@
       <p><strong>Screen:</strong> {{ bookingData.screenName }}</p>
 
       <!-- Show Date Dropdown -->
-      <v-select label="Select Show Date" :items="availableDates" v-model="bookingData.showDate" outlined dense
-        class="mt-4" />
+      <v-select
+        label="Select Show Date"
+        :items="availableDates"
+        v-model="bookingData.showDate"
+        outlined
+        dense
+        class="mt-4"
+      />
 
       <!-- Show Time Dropdown -->
-      <v-select label="Select Show Time" :items="availableTimes" v-model="bookingData.showTime" item-title="label"
-        item-value="value" outlined dense class="mt-2" />
+      <v-select
+        label="Select Show Time"
+        :items="availableTimes"
+        v-model="bookingData.showTime"
+        item-title="label"
+        item-value="value"
+        outlined
+        dense
+        class="mt-2"
+      />
 
+      <!-- Available Seats Display -->
+      <div v-if="availableSeats !== null" class="mt-3">
+        <strong>Available Seats: </strong> {{ availableSeats }}
+      </div>
+
+      <!-- Ticket Categories & Quantities -->
       <h3 class="text-subtitle-1 mt-4 mb-2">Select Tickets</h3>
       <v-row v-for="(category, index) in categoryBookings" :key="index" class="align-center">
         <v-col cols="6">
-          <v-text-field label="Category Name" v-model="category.categoryName" outlined dense readonly />
+          <v-text-field
+            label="Category Name"
+            v-model="category.categoryName"
+            outlined
+            dense
+            readonly
+          />
         </v-col>
         <v-col cols="6">
-          <v-text-field label="Quantity" type="number" min="0" v-model.number="category.quantity" outlined dense />
+          <v-text-field
+            label="Quantity"
+            type="number"
+            min="0"
+            :max="availableSeats"
+            v-model.number="category.quantity"
+            :disabled="availableSeats === null || !bookingData.showDate || !bookingData.showTime"
+            outlined
+            dense
+          />
         </v-col>
       </v-row>
 
-      <v-btn color="primary" class="mt-4" @click="submitBooking">
+      <v-btn
+        color="primary"
+        class="mt-4"
+        @click="submitBooking"
+        :disabled="availableSeats === null || !bookingData.showDate || !bookingData.showTime"
+      >
         Confirm Booking
       </v-btn>
 
-      <!-- Snackbar for user feedback -->
+      <!-- Snackbar -->
       <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000">
         {{ snackbar.message }}
       </v-snackbar>
     </v-card>
 
-    <!-- Booking Summary After Confirm -->
+    <!-- Booking Summary + Print Button -->
     <v-card v-if="bookingSummary" class="mt-4 pa-4" outlined>
       <h3 class="text-subtitle-1 mb-2">Booking Summary</h3>
       <p><strong>Total Before Tax:</strong> ₹{{ bookingSummary.totalBeforeTax }}</p>
@@ -50,8 +90,12 @@
           {{ cat.categoryName }} × {{ cat.quantity }} @ ₹{{ cat.pricePerTicket }} = ₹{{ cat.totalPrice }}
         </li>
       </ul>
-    </v-card>
 
+      <!-- Print Button -->
+      <v-btn color="success" class="mt-4" @click="printTicket">
+        Print Ticket
+      </v-btn>
+    </v-card>
   </v-container>
 </template>
 
@@ -76,6 +120,7 @@ export default {
       categoryBookings: [],
       availableDates: [],
       availableTimes: [],
+      availableSeats: null,
       bookingSummary: null,
       snackbar: {
         show: false,
@@ -84,8 +129,23 @@ export default {
       }
     };
   },
+  watch: {
+    'bookingData.showDate'(newDate) {
+      if (newDate && this.bookingData.showTime) {
+        this.fetchAvailableSeats();
+      } else {
+        this.availableSeats = null;
+      }
+    },
+    'bookingData.showTime'(newTime) {
+      if (newTime && this.bookingData.showDate) {
+        this.fetchAvailableSeats();
+      } else {
+        this.availableSeats = null;
+      }
+    }
+  },
   methods: {
-
     formatDateTime(dateTimeStr) {
       if (!dateTimeStr) return '';
       const options = {
@@ -97,6 +157,23 @@ export default {
         minute: '2-digit'
       };
       return new Date(dateTimeStr).toLocaleString('en-IN', options);
+    },
+
+    async fetchAvailableSeats() {
+      try {
+        const response = await axios.get('http://localhost:8082/api/userdetails/getAvailableSeats', {
+          params: {
+            screenId: this.bookingData.screenId,
+            showDate: this.bookingData.showDate,
+            showTime: this.bookingData.showTime
+          }
+        });
+        this.availableSeats = response.data.availableSeats;
+      } catch (error) {
+        console.error('Failed to fetch available seats:', error);
+        this.availableSeats = null;
+        this.showSnackbar('Failed to load available seats', 'error');
+      }
     },
 
     async submitBooking() {
@@ -112,6 +189,12 @@ export default {
         return;
       }
 
+      const totalTickets = validBookings.reduce((sum, c) => sum + c.quantity, 0);
+      if (this.availableSeats !== null && totalTickets > this.availableSeats) {
+        this.showSnackbar(`You cannot book more than ${this.availableSeats} seats`, 'warning');
+        return;
+      }
+
       const payload = {
         ...this.bookingData,
         categoryBookings: validBookings
@@ -119,16 +202,14 @@ export default {
 
       try {
         const response = await axios.post('http://localhost:8082/api/userdetails/bookticket', payload);
-
-        // Store booking summary
         this.bookingSummary = response.data;
-
         this.showSnackbar('Booking successful!', 'success');
       } catch (error) {
         console.error('Booking failed:', error);
         this.showSnackbar('Booking failed. Try again.', 'error');
       }
     },
+
     async fetchTicketCategories() {
       try {
         const response = await axios.get('http://localhost:8082/api/theatredetails/gettheatrecate', {
@@ -142,6 +223,7 @@ export default {
         console.error('Failed to fetch ticket categories:', error);
       }
     },
+
     generateDates(start, end) {
       const dates = [];
       const startDate = new Date(start);
@@ -152,19 +234,54 @@ export default {
       }
       return dates;
     },
+
     showSnackbar(message, color) {
       this.snackbar.message = message;
       this.snackbar.color = color;
       this.snackbar.show = true;
+    },
+
+    printTicket() {
+      const myWindow = window.open('', 'PrintWindow', 'width=800,height=600');
+      myWindow.document.write(`
+        <html>
+          <head>
+            <title>Ticket Print</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 20px; }
+              h2 { color: #333; }
+              p { margin: 5px 0; }
+              ul { padding-left: 20px; }
+            </style>
+          </head>
+          <body>
+            <h2>Booking Ticket</h2>
+            <p><strong>User ID:</strong> ${this.bookingData.userId}</p>
+            <p><strong>Movie:</strong> ${this.bookingData.movieName}</p>
+            <p><strong>Theatre:</strong> ${this.bookingData.theatreName}</p>
+            <p><strong>Screen:</strong> ${this.bookingData.screenName}</p>
+            <p><strong>Show Date:</strong> ${this.bookingData.showDate}</p>
+            <p><strong>Show Time:</strong> ${this.bookingData.showTime}</p>
+            <h3>Tickets:</h3>
+            <ul>
+              ${this.bookingSummary.categoryBookings
+                .map(cat => `<li>${cat.categoryName} × ${cat.quantity} @ ₹${cat.pricePerTicket} = ₹${cat.totalPrice}</li>`)
+                .join('')}
+            </ul>
+            <p><strong>Total Before Tax:</strong> ₹${this.bookingSummary.totalBeforeTax}</p>
+            <p><strong>Tax (${this.bookingSummary.taxPercentage}%):</strong> ₹${this.bookingSummary.taxAmount}</p>
+            <p><strong>Total Amount:</strong> ₹${this.bookingSummary.totalWithTax}</p>
+            <button onclick="window.print(); window.close();" style="margin-top:20px;">Print & Close</button>
+          </body>
+        </html>
+      `);
+
+      myWindow.document.close();
     }
   },
+
   async mounted() {
-    const {
-      userId,
-      movieId,
-      theatreId,
-      screenId
-    } = this.$route.params;
+    const { userId, movieId, theatreId, screenId } = this.$route.params;
 
     this.bookingData.userId = userId;
     this.bookingData.movieId = movieId;

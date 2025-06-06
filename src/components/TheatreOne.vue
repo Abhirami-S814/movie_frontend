@@ -32,10 +32,12 @@
           <v-list-item-title>Ticket Category</v-list-item-title>
         </v-list-item>
 
-        <!-- <v-list-item link @click="selectedSection = 'ticketCategory'">
-          <v-list-item-icon><v-icon>mdi-ticket</v-icon></v-list-item-icon>
-          <v-list-item-title>Movies</v-list-item-title>
-        </v-list-item> -->
+        <v-list-item link @click="selectedSection = 'theatreTax'">
+  <v-list-item-icon><v-icon>mdi-cash-multiple</v-icon></v-list-item-icon>
+  <v-list-item-title>Theatre Tax</v-list-item-title>
+</v-list-item>
+
+
       </v-list>
 
     </v-navigation-drawer>
@@ -43,16 +45,20 @@
     <!-- Main Content -->
     <v-main class="main-background">
       <v-container class="pa-6">
-        <div v-if="selectedSection === 'profile'">
-          <v-card class="mb-8" elevation="3" max-width="700" mx-auto>
-            <v-card-text>
-              <p><strong>📧 Email:</strong> {{ theatre.email }}</p>
-              <p><strong>📍 Location:</strong> {{ theatre.location }}</p>
-              <p><strong>📞 Contact:</strong> {{ theatre.contact }}</p>
-              <p><strong>🎬 Screens:</strong> {{ theatre.noOfScreens }}</p>
-            </v-card-text>
-          </v-card>
-        </div>
+        <div
+  v-if="selectedSection === 'profile'"
+  class="profile-section"
+>
+  <v-card class="profile-card" elevation="3" max-width="700" mx-auto>
+    <v-card-text>
+      <h2 class="theatre-name">{{ theatre.name }}</h2>
+      <p><strong>📧 Email:</strong> {{ theatre.email }}</p>
+      <p><strong>📞 Contact:</strong> {{ theatre.contact }}</p>
+      <p><strong>🎬 Screens:</strong> {{ theatre.noOfScreens }}</p>
+    </v-card-text>
+  </v-card>
+</div>
+
 
         <div v-if="selectedSection === 'screens'">
           <div class="mb-6">
@@ -223,6 +229,64 @@
           </v-card>
         </div>
 
+        <!-- Theatre Tax Section -->
+<div v-if="selectedSection === 'theatreTax'">
+  <v-card class="mb-6 pa-4" elevation="2" max-width="500" mx-auto>
+  <v-card-title>Add/Update Theatre Tax</v-card-title>
+  <v-card-text>
+    <v-text-field
+  v-model.number="taxPercentage"
+  label="Tax Amount (%)"
+  type="number"
+  dense
+  outlined
+  :disabled="!isEditingTax && theatreTax !== null"  
+/>
+
+<!-- Add Tax button is always visible -->
+<v-btn
+  color="primary"
+  class="mt-3"
+  @click="theatreTax === null ? submitTheatreTax() : updateTheatreTax()"
+  :disabled="!isEditingTax && theatreTax !== null" 
+>
+  {{ theatreTax === null ? 'Add Tax' : 'Save Tax' }}
+</v-btn> 
+
+<!-- Update Tax button visible only if tax exists -->
+<v-btn
+  v-if="theatreTax !== null"
+  color="orange"
+  class="mt-3 ml-2"
+  @click="enableEditingTax"
+>
+  Update Tax
+</v-btn>
+
+<!-- Delete Tax button visible only if tax exists -->
+<v-btn
+  v-if="theatreTax !== null"
+  color="red"
+  class="mt-3 ml-2"
+  @click="deleteTheatreTax"
+>
+  Delete Tax
+</v-btn>
+
+  </v-card-text>
+</v-card>
+
+
+  <v-card class="pa-4" elevation="2" max-width="500" mx-auto>
+    <v-card-title class="text-h6">📊 Current Theatre Tax</v-card-title>
+    <v-card-text>
+      <p v-if="theatreTax !== null"><strong>TaxPercentage:</strong> {{ theatreTax }}%</p>
+      <p v-else>No tax added yet.</p>
+    </v-card-text>
+  </v-card>
+</div>
+
+
 
       </v-container>
     </v-main>
@@ -268,7 +332,10 @@ export default {
       editingCategoryId: null,
       updatedCharge: null,
       theatreScreens: [],
-      
+      theatreTax: null,
+taxPercentage: null,
+isEditingTax: false,
+
     };
   },
   computed: {
@@ -276,10 +343,12 @@ export default {
   },
   watch: {
     selectedSection(newVal) {
-      if (newVal === 'ticketCategory') {
-        this.fetchTicketCategories();
-      }
+    if (newVal === 'ticketCategory') {
+      this.fetchTicketCategories();
+    } else if (newVal === 'theatreTax') {
+      this.fetchTheatreTax();
     }
+  }
   },
   // mounted(){
   //   this.fetchMovies();
@@ -617,13 +686,85 @@ export default {
     } catch (error) {
       alert('Failed to fetch theatre screens: ' + error.message);
     }
+  },
+async submitTheatreTax() {
+  if (this.taxPercentage === null || this.taxPercentage < 0) {
+    alert('Please enter a valid tax amount.');
+    return;
   }
 
+  const taxPayload = {
+  taxPercentage: this.taxPercentage
+};
 
 
+  try {
+    const res = await axios.post('http://localhost:8082/api/theatredetails/addtx', taxPayload, {
+      params: { theatreId: this.gettheatreId }
+    });
 
+    if (res.status === 200 || res.status === 201) {
+      alert('Tax added successfully!');
+      this.theatreTax = res.data.taxPercentage;
+      this.taxPercentage = null;
+      this.isEditingTax = false; 
+    } else {
+      alert('Failed to add tax.');
+    }
+  } catch (err) {
+    alert('Error adding tax: ' + err.message);
+  }
+},
+async fetchTheatreTax() {
+  try {
+    const res = await axios.get('http://localhost:8082/api/theatredetails/gettax', {
+      params: { theatreId: this.gettheatreId }
+    });
+    this.theatreTax = res.data.taxPercentage;
+    this.taxPercentage = this.theatreTax;
+    this.isEditingTax = false;  // input disabled initially
+  } catch (err) {
+    console.error('Failed to fetch tax:', err.message);
+    this.theatreTax = null;
+    this.taxPercentage = null;
+    this.isEditingTax = true;  // allow adding tax if no tax exists
+  }
+},
+enableEditingTax() {
+  this.isEditingTax = true;
+},
+ async updateTheatreTax() {
+  try {
+    const response = await axios.put('http://localhost:8082/api/theatredetails/updatetx', {
+      theatreId: this.gettheatreId,  // match your other code
+      taxPercentage: this.taxPercentage
+    }, {
+      params: { theatreId: this.gettheatreId }
+    });
 
+    this.theatreTax = response.data.taxPercentage;
+    alert('Tax updated successfully!');
+    this.isEditingTax = false;  // disable editing again
+  } catch (error) {
+    console.error('Error updating tax:', error);
+    alert('Failed to update tax.');
+  }
+},
 
+    async deleteTheatreTax() {
+  try {
+    await axios.delete('http://localhost:8082/api/theatredetails/deletetx', {
+      params: { theatreId: this.gettheatreId }
+    });
+    this.taxPercentage = null;
+    this.theatreTax = null;
+    this.isEditingTax = true;  // enable input for adding new tax
+    alert('Tax deleted successfully!');
+  } catch (error) {
+    console.error('Error deleting tax:', error);
+    alert('Failed to delete tax.');
+  }
+},
 
   },
 
@@ -646,5 +787,28 @@ export default {
 .v-list-item-title,
 .v-list-item-subtitle {
   font-weight: 500;
+}
+
+
+
+.profile-card {
+  background-color: rgba(255, 255, 255, 0.85);
+  padding: 30px 40px;
+  border-radius: 12px;
+  background-color: transparent;
+box-shadow: none;
+
+}
+
+.theatre-name {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.profile-card p {
+  font-size: 1.25rem;
+  margin: 8px 0;
 }
 </style>

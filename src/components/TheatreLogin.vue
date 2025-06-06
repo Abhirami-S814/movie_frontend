@@ -273,7 +273,7 @@ export default {
   background: url(../assets/theatrelogbg.jfif) no-repeat center center;
   background-size: cover;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
 }
 
