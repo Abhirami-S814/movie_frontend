@@ -5,9 +5,12 @@
         <v-row class="justify-start">
           <v-col cols="12" sm="8" md="6">
             <v-card class="pa-5 text-center transparent-card" flat>
-              <v-card-title class="text-h4 font-weight-bold"
-                >🎉 Welcome Back, Admin!</v-card-title
-              >
+              <v-card-title
+  class="text-h4 text-sm-h5 text-xs-h6 font-weight-bold text-center"
+>
+  🎉 Welcome Back, Admin!
+</v-card-title>
+
               <v-btn
                 color="primary"
                 class="mt-4 w-100 w-sm-auto"
@@ -32,6 +35,18 @@
                 @click="fetchBookings"
                 >View Bookings</v-btn
               >
+              <v-btn
+                color="success"
+                class="mt-2 w-100 w-sm-auto"
+                @click="fetchMovies"
+                >🎬 View All Movies</v-btn
+              >
+              <v-btn
+  color="warning"
+  class="mt-2 w-100 w-sm-auto"
+  @click="fetchAllShowDates"
+>📅 View All Movie Shows</v-btn>
+
             </v-card>
           </v-col>
         </v-row>
@@ -105,12 +120,14 @@
                   </v-col>
                   <v-col cols="12" sm="6">
                     <v-text-field
-                      label="📅 Release Date"
-                      v-model="releasedate"
-                      type="date"
-                      :rules="[rules.required]"
-                      variant="outlined"
-                    />
+  label="📅 Release Date"
+  v-model="releasedate"
+  type="date"
+  :min="todayDate" 
+  :rules="[rules.required]"
+  variant="outlined"
+/>
+
                   </v-col>
                   <v-col cols="12" sm="6">
                     <v-file-input
@@ -204,10 +221,9 @@
             </v-card-text>
           </v-card>
         </v-dialog>
-        <!-- vvvvvvvvvvvvvvvvvv -->
+
         <!-- View Bookings Dialog -->
         <v-dialog v-model="showBookingsDialog" max-width="900px" persistent>
-
           <v-card>
             <v-card-title class="d-flex justify-space-between align-center">
               All Bookings
@@ -250,10 +266,81 @@
             </v-card-text>
           </v-card>
         </v-dialog>
+
+        <!-- View Movies Dialog -->
+        <v-dialog v-model="showMoviesDialog" max-width="900px" persistent>
+          <v-card>
+            <v-card-title class="d-flex justify-space-between align-center">
+              All Movies
+              <v-icon class="deletebtn" @click="showMoviesDialog = false"
+                >mdi-close-thick</v-icon
+              >
+            </v-card-title>
+            <v-card-text>
+              <v-table dense>
+                <thead>
+                  <tr>
+                    <th>Movie Name</th>
+                    <th>Duration</th>
+                    <th>Description</th>
+                    <th>Language</th>
+                    <th>Genre</th>
+                    <th>Release Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(movie, index) in movies" :key="index">
+                    <td>{{ movie.movieName }}</td>
+                    <td>{{ movie.duration }}</td>
+                    <td>{{ movie.description }}</td>
+                    <td>{{ getLangName(movie.language) }}</td>
+                    <td>{{ getGenreName(movie.genre) }}</td>
+                    <td>{{ movie.releaseDate }}</td>
+                  </tr>
+                </tbody>
+              </v-table>
+            </v-card-text>
+          </v-card>
+        </v-dialog>
+        <!-- View All Movie Shows Dialog -->
+<v-dialog v-model="showMovieShowsDialog" max-width="1000px" persistent>
+  <v-card>
+    <v-card-title class="d-flex justify-space-between align-center">
+      All Movie Shows
+      <v-icon class="deletebtn" @click="showMovieShowsDialog = false"
+        >mdi-close-thick</v-icon
+      >
+    </v-card-title>
+    <v-card-text>
+      <v-table dense>
+        <thead>
+          <tr>
+            <th>Movie</th>
+            <th>Theatre</th>
+            <th>Screen</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(show, index) in movieShows" :key="index">
+            <td>{{ show.movieName }}</td>
+            <td>{{ show.name }}</td>
+            <td>{{ show.screenName }}</td>
+            <td>{{ show.movStart }}</td>
+            <td>{{ show.movEnd }}</td>
+          </tr>
+        </tbody>
+      </v-table>
+    </v-card-text>
+  </v-card>
+</v-dialog>
+
       </v-container>
     </div>
   </div>
 </template>
+
 
 <script>
 import axios from "axios";
@@ -275,17 +362,22 @@ export default {
       selectedGenre: null,
       movieposter: null,
       bookings: [],
+      movies: [],
+      showMoviesDialog: false,
+      movieShows: [],
+showMovieShowsDialog: false,
+
       rules: {
         required: (v) => !!v || "This field is required",
         timeFormat: (v) =>
           /^([0-1]?\d|2[0-3]):[0-5]\d:[0-5]\d$/.test(v) ||
           "Enter a valid time (hh:mm:ss)",
       },
+      todayDate: new Date().toISOString().split('T')[0],
     };
   },
   computed: {
     ...mapGetters(["getLanguages", "getGenres"]),
-
     languages() {
       return (this.getLanguages || []).map((lang) => ({
         ...lang,
@@ -327,9 +419,12 @@ export default {
         this.manageType === "language" ? "langName" : "genreName";
 
       try {
-        await axios.post(`http://localhost:8082/api/admindetails${endpoint}`, {
-          [modelKey]: this.newItemName,
-        });
+        await axios.post(
+          `http://localhost:8082/api/admindetails${endpoint}`,
+          {
+            [modelKey]: this.newItemName,
+          }
+        );
         this.newItemName = "";
         await this.refreshData();
       } catch (error) {
@@ -344,9 +439,7 @@ export default {
 
       if (!updatedName || updatedName === originalName) {
         alert(
-          `Did you change the ${
-            isLanguage ? "language" : "genre"
-          } name before updating?`
+          `Did you change the ${isLanguage ? "language" : "genre"} name before updating?`
         );
         return;
       }
@@ -420,7 +513,7 @@ export default {
           duration: this.duration,
           description: this.description,
           releaseDate: this.releasedate,
-          language: this.selectedLang.langId, // ✅ Just the ID
+          language: this.selectedLang.langId,
           genre: this.selectedGenre.genreId,
         };
 
@@ -438,23 +531,66 @@ export default {
             headers: { "Content-Type": "multipart/form-data" },
           }
         );
+
+        this.moviename = "";
+        this.duration = "";
+        this.description = "";
+        this.releasedate = "";
+        this.selectedLang = null;
         this.selectedGenre = null;
         this.movieposter = null;
+
+        alert("Movie added successfully");
       } catch (error) {
         console.error("Add movie error:", error.response || error);
         alert("Failed to add movie.");
       }
     },
-  },
-  async fetchBookings() {
+    async fetchBookings() {
       try {
-        const response = await axios.get("http://localhost:8082/api/userdetails/allbookings");
+        const response = await axios.get(
+          "http://localhost:8082/api/userdetails/getallbookings"
+        );
         this.bookings = response.data || [];
         this.showBookingsDialog = true;
       } catch (error) {
         console.error("Error fetching bookings:", error);
         alert("Failed to fetch bookings.");
       }
+    },
+    async fetchMovies() {
+      try {
+        const response = await axios.get(
+          "http://localhost:8082/api/admindetails/getallmovs"
+        );
+        this.movies = response.data || [];
+        this.showMoviesDialog = true;
+      } catch (error) {
+        console.error("Error fetching movies:", error);
+        alert("Failed to fetch movies.");
+      }
+    },
+    getLangName(id) {
+      const lang = this.languages.find((l) => l.langId === id);
+      return lang ? lang.langName : `ID: ${id}`;
+    },
+    getGenreName(id) {
+      const genre = this.genres.find((g) => g.genreId === id);
+      return genre ? genre.genreName : `ID: ${id}`;
+    },
+    async fetchAllShowDates() {
+  try {
+    const response = await axios.get(
+      "http://localhost:8082/api/theatredetails/getallmovshows"
+    );
+    this.movieShows = response.data || [];
+    this.showMovieShowsDialog = true;
+  } catch (error) {
+    console.error("Error fetching movie shows:", error);
+    alert("Failed to fetch movie shows.");
+  }
+}
+
   },
   mounted() {
     this.fetchLanguages();
@@ -465,26 +601,14 @@ export default {
 
 
 
-<style scoped>
-.welcome-title {
-  white-space: normal;
-  word-break: break-word;
-  line-height: 1.2;
-}
 
+<style scoped>
 .addbtn {
   width: 50%;
   font-weight: bold;
   border-radius: 20px;
   text-transform: none;
 }
-
-.welcome-title {
-  white-space: normal;
-  word-break: break-word;
-  line-height: 1.2;
-}
-
 
 .action-btn {
   min-width: 90px;
@@ -525,22 +649,15 @@ export default {
   background-size: cover;
   background-position: center center;
   min-height: 100vh;
-  background-position: center center;
-  min-height: 100vh;
   width: 100%;
   display: flex;
   flex-direction: column;
 }
-.transparent-card {
-  background-color: transparent !important;
-  box-shadow: none !important;
-}
 
 .transparent-card {
   background-color: transparent !important;
   box-shadow: none !important;
 }
-
 
 @media (max-width: 600px) {
   .addbtn {

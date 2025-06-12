@@ -19,7 +19,18 @@
           <input type="text" v-model="name" class="input" placeholder="Name" required />
           <input type="email" v-model="email" class="input" placeholder="Email" required />
           <input type="text" v-model="contact" class="input" placeholder="Contact" required />
-          <input type="number" v-model.number="noOfScreens" class="input" placeholder="Number of Screens" required min="1" />
+          
+          <!-- Updated Number of Screens field -->
+          <input
+            :type="noOfScreensFocused ? 'number' : 'text'"
+            v-model.number="noOfScreens"
+            class="input"
+            placeholder="Number of Screens"
+            required
+            min="1"
+            @focus="noOfScreensFocused = true"
+          />
+
           <input type="password" v-model="password" class="input" placeholder="Password" required />
 
           <p style="font-size: 14px; font-weight: bold">Pick location on map:</p>
@@ -63,6 +74,7 @@ export default {
       contact: '',
       location: '',
       noOfScreens: 0,
+      noOfScreensFocused: false, // Added flag for focus behavior
       latitude: null,
       longitude: null,
       locationName: '',
@@ -78,15 +90,13 @@ export default {
 
       this.$nextTick(() => {
         if (!this.isLoginForm) {
-          // Set default location if lat/lng are null to avoid Leaflet errors
           if (this.latitude === null || this.longitude === null) {
-            this.latitude = 20.5937; // Example default lat (India)
-            this.longitude = 78.9629; // Example default lng
-            this.locationName = "Default Location";
+            this.latitude = 20.5937;
+            this.longitude = 78.9629;
+            this.locationName = "Default Location"; // India
           }
           this.initMap();
         } else {
-          // If switching to login, remove map to cleanup
           if (this.map) {
             this.map.off();
             this.map.remove();
@@ -142,6 +152,7 @@ export default {
       this.contact = '';
       this.location = '';
       this.noOfScreens = 0;
+      this.noOfScreensFocused = false; // Reset focus flag too
       this.password = '';
       this.latitude = null;
       this.longitude = null;
@@ -247,7 +258,6 @@ export default {
 }
 
 .form-btn {
-  /* padding: 10px; */
   border-radius: 20px;
   background: rgb(74, 77, 77);
   color: white;

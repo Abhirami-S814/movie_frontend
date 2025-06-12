@@ -52,7 +52,7 @@
             label="Quantity"
             type="number"
             min="0"
-            :max="availableSeats"
+            :max="maxCategoryQuantity(category.quantity)"
             v-model.number="category.quantity"
             :disabled="availableSeats === null || !bookingData.showDate || !bookingData.showTime"
             outlined
@@ -65,7 +65,12 @@
         color="primary"
         class="mt-4"
         @click="submitBooking"
-        :disabled="availableSeats === null || !bookingData.showDate || !bookingData.showTime"
+        :disabled="
+          availableSeats === null ||
+          !bookingData.showDate ||
+          !bookingData.showTime ||
+          bookingCompleted
+        "
       >
         Confirm Booking
       </v-btn>
@@ -122,6 +127,7 @@ export default {
       availableTimes: [],
       availableSeats: null,
       bookingSummary: null,
+      bookingCompleted: false, // <== NEW
       snackbar: {
         show: false,
         message: '',
@@ -129,6 +135,13 @@ export default {
       }
     };
   },
+
+  computed: {
+    totalSelectedTickets() {
+      return this.categoryBookings.reduce((sum, c) => sum + (c.quantity || 0), 0);
+    }
+  },
+
   watch: {
     'bookingData.showDate'(newDate) {
       if (newDate && this.bookingData.showTime) {
@@ -143,8 +156,22 @@ export default {
       } else {
         this.availableSeats = null;
       }
+    },
+    categoryBookings: {
+      handler(newVal) {
+        newVal.forEach(cat => {
+          const max = this.maxCategoryQuantity(cat.quantity);
+          if (cat.quantity > max) {
+            cat.quantity = max;
+          } else if (cat.quantity < 0) {
+            cat.quantity = 0;
+          }
+        });
+      },
+      deep: true
     }
   },
+
   methods: {
     formatDateTime(dateTimeStr) {
       if (!dateTimeStr) return '';
@@ -157,6 +184,12 @@ export default {
         minute: '2-digit'
       };
       return new Date(dateTimeStr).toLocaleString('en-IN', options);
+    },
+
+    maxCategoryQuantity(currentQty) {
+      if (this.availableSeats === null) return 0;
+      const maxPossible = this.availableSeats - (this.totalSelectedTickets - (currentQty || 0));
+      return maxPossible < 0 ? 0 : maxPossible;
     },
 
     async fetchAvailableSeats() {
@@ -203,6 +236,7 @@ export default {
       try {
         const response = await axios.post('http://localhost:8082/api/userdetails/bookticket', payload);
         this.bookingSummary = response.data;
+        this.bookingCompleted = true; // <== disable button after success
         this.showSnackbar('Booking successful!', 'success');
       } catch (error) {
         console.error('Booking failed:', error);
@@ -277,6 +311,11 @@ export default {
       `);
 
       myWindow.document.close();
+
+      // After print, navigate to movie list page
+      myWindow.onafterprint = () => {
+        this.$router.push('/movielist'); // CHANGE this path if your movie list page has different route
+      };
     }
   },
 
