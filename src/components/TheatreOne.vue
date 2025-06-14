@@ -39,10 +39,17 @@
         </v-list-item>
 
         <v-list-item link @click="selectedSection = 'theatreShows'">
-                    <v-list-item-icon><v-icon>mdi-movie-open</v-icon></v-list-item-icon>
+          <v-list-item-icon><v-icon>mdi-movie-open</v-icon></v-list-item-icon>
           <v-list-item-title> Theatre Shows</v-list-item-title>
         </v-list-item>
       </v-list>
+
+      <v-list-item
+        @click="selectedSection = 'theatreShowsList'"
+        :class="{ 'active-section': selectedSection === 'theatreShowsList' }"
+      >
+        <v-list-item-title>Theatre ShowsDates</v-list-item-title>
+      </v-list-item>
     </v-navigation-drawer>
 
     <!-- Main Content -->
@@ -82,9 +89,7 @@
 
           <v-dialog v-model="showAddScreenDialog" max-width="500">
             <v-card>
-              <v-card-title
-                >Add Screen</v-card-title
-              >
+              <v-card-title>Add Screen</v-card-title>
               <v-card-text>
                 <v-text-field
                   v-model="dynamicScreens[selectedScreenIndex].screenName"
@@ -213,24 +218,32 @@
                 dense
                 outlined
               />
+              <v-select
+                v-model="selectedMovieId"
+                :items="movies"
+                item-title="movieName"
+                item-value="movieId"
+                label="Select already assigned Movie "
+                dense
+                outlined
+              />
 
-             
               <v-text-field
-  v-model="showStartDate"
-  type="date"
-  label="Start Date"
-  :min="todayDate"
-  dense
-  outlined
-/>
+                v-model="showStartDate"
+                type="date"
+                label="Start Date"
+                :min="todayDate"
+                dense
+                outlined
+              />
               <v-text-field
-  v-model="showEndDate"
-  type="date"
-  label="End Date"
-  :min="showStartDate || todayDate"
-  dense
-  outlined
-/>
+                v-model="showEndDate"
+                type="date"
+                label="End Date"
+                :min="showStartDate || todayDate"
+                dense
+                outlined
+              />
               <!-- Add Show Date button -->
               <v-btn
                 color="primary"
@@ -245,21 +258,6 @@
                 @click="submitShowDates"
               >
                 Add Show Date
-              </v-btn>
-
-              <v-btn
-                color="secondary"
-                class="mt-4"
-                :disabled="
-                  !isShowDateAdded ||
-                  !selectedScreenId ||
-                  !selectedMovieId ||
-                  !showStartDate ||
-                  !showEndDate
-                "
-                @click="updateShowDates"
-              >
-                Update Show Date
               </v-btn>
             </v-card-text>
           </v-card>
@@ -472,48 +470,101 @@
             </v-card-text>
           </v-card>
         </div>
-<v-container v-if="selectedSection === 'theatreShows'">
-  <h1 class="text-h4 mb-6 font-weight-bold">🎬 Active Theatre Shows</h1>
 
-  <!-- Loading indicator -->
-  <v-progress-linear indeterminate v-if="loadingShows"></v-progress-linear>
+        <!-- Show list -->
 
-  <!-- Show cards -->
-  <v-row v-if="!loadingShows && theatreShows.length > 0" dense>
-    <v-col
-      v-for="show in theatreShows"
-      :key="show.dateId"
-      cols="12"
-      sm="6"
-      md="4"
-    >
-      <v-card class="pa-4" outlined elevation="2">
-        <v-card-title class="text-h5 mb-2">
-          Movie: {{ show.movieName }}
-        </v-card-title>
+        <div v-if="selectedSection === 'theatreShowsList'">
+          <h2>Theatre Shows</h2>
 
-        <v-divider></v-divider>
+          <div v-if="loadingTheatreShows">Loading shows...</div>
+          <div v-else-if="theatreShowsList.length === 0">
+            No shows available.
+          </div>
+          <div v-else>
+            <table class="theatre-shows-table">
+              <thead>
+                <tr>
+                  <th>Screen Name</th>
+                  <th>Movie Name</th>
+                  <th>Show Dates</th>
+                  <th>Seat Capacity</th>
+                  <th>Show Times</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
 
-        <v-card-text class="text-h6 mt-3">
-          <div><strong>🖥️ Screen:</strong> {{ show.screenName }}</div>
-          <div><strong> Show Start Date:</strong> {{ show.movStart }}</div>
-          <div><strong> Show End Date:</strong> {{ show.movEnd }}</div>
-        </v-card-text>
-      </v-card>
-    </v-col>
-  </v-row>
+                <tbody>
+  <tr v-for="show in theatreShowsList" :key="show.dateId">
+    <td>{{ show.screenName }}</td>
+    <td>{{ show.movieName }}</td>
+    <td>{{ show.movStart }} to {{ show.movEnd }}</td>
+    <td>{{ show.seatCapacity }}</td>
+    <td>
+      <ul style="padding-left: 20px; margin: 0">
+        <li v-for="time in show.showTimes" :key="time.showTimeId">
+          {{ time.showStart }}
+        </li>
+      </ul>
+    </td>
+    <td>
+      <v-btn
+        small
+        color="error"
+        @click="deleteShowDate(show.dateId)"
+      >Delete</v-btn>
+    </td>
+  </tr>
+</tbody>
 
-  <!-- No shows -->
-  <v-alert
-    type="info"
-    v-if="!loadingShows && theatreShows.length === 0"
-    class="mt-4"
-  >
-    No active shows found.
-  </v-alert>
-</v-container>
+            </table>
+          </div>
+        </div>
 
+        <v-container v-if="selectedSection === 'theatreShows'">
+          <h1 class="text-h4 mb-6 font-weight-bold">🎬 Active Theatre Shows</h1>
 
+          <!-- Loading indicator -->
+          <v-progress-linear
+            indeterminate
+            v-if="loadingShows"
+          ></v-progress-linear>
+
+          <!-- Show cards -->
+          <v-row v-if="!loadingShows && theatreShows.length > 0" dense>
+            <v-col
+              v-for="show in theatreShows"
+              :key="show.dateId"
+              cols="12"
+              sm="6"
+              md="4"
+            >
+              <v-card class="pa-4" outlined elevation="2">
+                <v-card-title class="text-h5 mb-2">
+                  Movie: {{ show.movieName }}
+                </v-card-title>
+
+                <v-divider></v-divider>
+
+                <v-card-text class="text-h6 mt-3">
+                  <div><strong>🖥️ Screen:</strong> {{ show.screenName }}</div>
+                  <div>
+                    <strong> Show Start Date:</strong> {{ show.movStart }}
+                  </div>
+                  <div><strong> Show End Date:</strong> {{ show.movEnd }}</div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+
+          <!-- No shows -->
+          <v-alert
+            type="info"
+            v-if="!loadingShows && theatreShows.length === 0"
+            class="mt-4"
+          >
+            No active shows found.
+          </v-alert>
+        </v-container>
       </v-container>
     </v-main>
   </v-app>
@@ -568,7 +619,13 @@ export default {
       isEditingTax: false,
       theatreShows: [],
       loadingShows: false,
-      todayDate: new Date().toISOString().split('T')[0],
+      todayDate: new Date().toISOString().split("T")[0],
+      showDatesList: [],
+      theatreShowsList: [],
+      loadingTheatreShows: false,
+      selectedDateId: null,
+      newEndDate: '',
+      showUpdateDialog: false
     };
   },
   computed: {
@@ -582,12 +639,73 @@ export default {
         this.fetchTheatreTax();
       } else if (newVal === "theatreShows") {
         this.fetchTheatreShows();
+      } else if (newVal === "theatreShowsList") {
+        this.fetchTheatreShowsList();
       }
     },
   },
 
   methods: {
     ...mapActions(["fetchTheatredetails"]),
+
+    async deleteShowDate(dateId) {
+  if (!confirm("Are you sure you want to delete this show date?")) return;
+
+  try {
+    await axios.delete("http://localhost:8082/api/theatredetails/deleteshow", {
+      params: { dateId },
+    });
+
+    alert("Show date deleted successfully");
+
+    // ✅ Remove the row from the local array to update the table
+    this.theatreShowsList = this.theatreShowsList.filter(
+  (show) => show.dateId !== dateId
+);
+
+  } catch (error) {
+    alert("Failed to delete show date: " + error.message);
+  }
+},
+    openUpdateDialog(show) {
+    this.selectedDateId = show.dateId;
+    this.newEndDate = show.movEnd;
+    this.showUpdateDialog = true;
+  },
+     async updateShowEndDate() {
+    try {
+      await axios.put("http://localhost:8082/api/theatredetails/updateshowdate", null, {
+        params: {
+          dateId: this.selectedDateId,
+          movEnd: this.newEndDate,
+        }
+      });
+
+      alert("Show end date updated");
+      this.showUpdateDialog = false;
+      this.fetchTheatreShowsList(); // refresh the list
+    } catch (error) {
+      alert("Failed to update: " + error.message);
+    }
+  },
+
+    async fetchTheatreShowsList() {
+      this.loadingTheatreShows = true;
+      try {
+        const res = await axios.get(
+          "http://localhost:8082/api/theatredetails/getshow",
+          {
+            params: { theatreId: this.gettheatreId },
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+        this.theatreShowsList = res.data;
+      } catch (error) {
+        alert("Failed to fetch theatre shows: " + error.message);
+      } finally {
+        this.loadingTheatreShows = false;
+      }
+    },
 
     async fetchTheatreShows() {
       this.loadingShows = true;
@@ -766,6 +884,18 @@ export default {
           this.dateId = res.data.dateId;
           this.showstartdate = res.data.movStart;
           this.showenddate = res.data.movEnd;
+
+          // Add to table data
+          this.showDatesList.push({
+            screenName:
+              this.screens.find((s) => s.screenId === this.selectedScreenId)
+                ?.screenName || this.selectedScreenId,
+            movieName:
+              this.movies.find((m) => m.movieId === this.selectedMovieId)
+                ?.movieName || this.selectedMovieId,
+            movStart: res.data.movStart,
+            movEnd: res.data.movEnd,
+          });
         } else {
           alert("Failed to add show dates");
         }
@@ -818,6 +948,7 @@ export default {
         showStart: this.showStart + ":00",
         theatreId: theatreId,
         movieId: this.selectedMovieId,
+        screenId: this.selectedScreenId,
       };
 
       try {
@@ -1155,4 +1286,53 @@ export default {
   font-size: 1.25rem;
   margin: 8px 0;
 }
+
+.theatre-shows-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.theatre-shows-table thead {
+  background-color: #1976d2; /* nice blue header */
+  color: white;
+}
+
+.theatre-shows-table th,
+.theatre-shows-table td {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.theatre-shows-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.theatre-shows-table tbody tr:hover {
+  background-color: #e3f2fd; /* subtle highlight on hover */
+  cursor: pointer;
+}
+
+.theatre-shows-table ul {
+  padding-left: 20px;
+  margin: 0;
+  list-style-type: disc;
+  color: #333;
+}
+
+.theatre-shows-table ul li {
+  line-height: 1.4;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-leave-to {
+  opacity: 0;
+}
+
 </style>
